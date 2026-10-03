@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+# AGENTS.md
+- Ride data lives in localStorage via `src/lib/rides.ts` (`useRides` hook) — MVP prototype, no backend by request.
+- Shared header is rendered in `__root.tsx`; ride display reuses `RideCard`/`StatusBadge`.

@@ -1,24 +1,45 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { User, Car, ArrowRight } from "lucide-react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "RideGo — Simple and flexible ride booking" },
+      { name: "description", content: "Request a ride at your own price or pick up passengers as a driver with RideGo." },
+      { property: "og:title", content: "RideGo — Simple and flexible ride booking" },
+      { property: "og:description", content: "Request a ride at your own price or pick up passengers as a driver." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+function ModeButton({ to, icon, title, text }: { to: "/passenger" | "/driver"; icon: React.ReactNode; title: string; text: string }) {
+  return (
+    <Link to={to} className="group flex items-center gap-4 rounded-3xl border border-border bg-card p-6 transition-all hover:border-primary hover:shadow-glow">
+      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground">{icon}</span>
+      <span className="flex-1">
+        <span className="block font-display text-2xl font-bold">{title}</span>
+        <span className="text-sm text-muted-foreground">{text}</span>
+      </span>
+      <ArrowRight className="h-6 w-6 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+    </Link>
+  );
+}
+
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="mx-auto flex max-w-5xl flex-col items-center px-4 py-16 md:py-28">
+      <span className="mb-6 rounded-full border border-border px-4 py-1 text-xs font-medium text-muted-foreground">You name the price</span>
+      <h1 className="text-center text-6xl font-bold tracking-tight md:text-8xl">
+        Ride<span className="text-primary">Go</span>
+      </h1>
+      <p className="mt-4 text-center text-lg text-muted-foreground md:text-xl">Simple and flexible ride booking</p>
+      <div className="mt-12 grid w-full max-w-3xl gap-4 md:grid-cols-2">
+        <ModeButton to="/passenger" icon={<User className="h-7 w-7" />} title="Passenger" text="Request a ride, set your price" />
+        <ModeButton to="/driver" icon={<Car className="h-7 w-7" />} title="Driver" text="Browse and accept requests" />
+      </div>
+    </main>
   );
 }
