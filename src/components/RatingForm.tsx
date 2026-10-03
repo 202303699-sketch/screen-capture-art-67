@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { rideActions, useMyRating, errMsg } from "@/lib/rides";
+import { rideActions, useMyRating, errMsg } from "@/lib/rides-db";
 import { useAuth } from "@/lib/auth";
 
 export function RatingForm({ rideId, who }: { rideId: string; who: string }) {
@@ -22,7 +22,7 @@ export function RatingForm({ rideId, who }: { rideId: string; who: string }) {
     );
 
   const submit = async () => {
-    if (!stars) return toast.error("Pick 1 to 5 stars");
+    if (!stars) { toast.error("Pick 1 to 5 stars"); return; }
     setBusy(true);
     try {
       await rideActions.rate(rideId, stars, comment.trim().slice(0, 500));
