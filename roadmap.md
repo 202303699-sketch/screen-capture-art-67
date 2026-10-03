@@ -1,7 +1,7 @@
 # A&S GO roadmap
 - [x] Rebrand to A&S GO
-- [ ] Phase 1: Cloud, auth (passenger/driver), profiles, rides in database
-- [ ] Phase 2: full statuses, realtime, notifications
-- [ ] Phase 3: Google Maps (search, markers, route, distance/ETA, live location)
-- [ ] Phase 4: ratings, history, earnings
-- [ ] Phase 5: admin dashboard
+- [x] Database, secure ride actions, live updates, notifications (backend)
+- [x] Google Maps connected; map, place search, route and distance pieces built
+- [ ] Sign up/login pages + gated pages; switch Passenger/Driver pages to database (use rides-db, HeaderAuth, RideCardDb, AuthProvider in root)
+- [ ] Profile, history, ride details, ratings UI, earnings
+- [ ] Admin dashboard
