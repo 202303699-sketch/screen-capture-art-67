@@ -36,7 +36,7 @@ function Passenger() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const res = schema.safeParse(form);
-    if (!res.success) return setError(res.error.issues[0].message);
+    if (!res.success) return setError(res.error.issues[0]?.message ?? "Invalid input");
     setError("");
     createRide(res.data.pickup, res.data.destination, res.data.price);
     setForm({ pickup: "", destination: "", price: "" });
