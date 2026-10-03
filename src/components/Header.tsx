@@ -12,7 +12,7 @@ export function Header() {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Car className="h-5 w-5" />
           </span>
-          RideGo
+          A&S GO
         </Link>
         <nav className="flex gap-1 rounded-full bg-card p-1">
           <Link to="/passenger" className={linkCls} activeProps={{ className: activeCls }}>Passenger</Link>

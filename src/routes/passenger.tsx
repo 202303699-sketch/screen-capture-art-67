@@ -8,9 +8,9 @@ import { RideCard } from "@/components/RideCard";
 export const Route = createFileRoute("/passenger")({
   head: () => ({
     meta: [
-      { title: "Request a Ride — RideGo" },
-      { name: "description", content: "Enter pickup, destination and your price to request a RideGo ride." },
-      { property: "og:title", content: "Request a Ride — RideGo" },
+      { title: "Request a Ride — A&S GO" },
+      { name: "description", content: "Enter pickup, destination and your price to request a A&S GO ride." },
+      { property: "og:title", content: "Request a Ride — A&S GO" },
       { property: "og:description", content: "Enter pickup, destination and your price to request a ride." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
