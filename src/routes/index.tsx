@@ -4,9 +4,9 @@ import { User, Car, ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RideGo — Simple and flexible ride booking" },
-      { name: "description", content: "Request a ride at your own price or pick up passengers as a driver with RideGo." },
-      { property: "og:title", content: "RideGo — Simple and flexible ride booking" },
+      { title: "A&S GO — Simple and flexible ride booking" },
+      { name: "description", content: "Request a ride at your own price or pick up passengers as a driver with A&S GO." },
+      { property: "og:title", content: "A&S GO — Simple and flexible ride booking" },
       { property: "og:description", content: "Request a ride at your own price or pick up passengers as a driver." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

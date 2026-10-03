@@ -6,10 +6,10 @@ import { RideCard } from "@/components/RideCard";
 export const Route = createFileRoute("/driver")({
   head: () => ({
     meta: [
-      { title: "Available Ride Requests — RideGo Driver" },
+      { title: "Available Ride Requests — A&S GO Driver" },
       { name: "description", content: "See nearby ride requests with passenger-proposed prices and accept or reject them." },
-      { property: "og:title", content: "Available Ride Requests — RideGo Driver" },
-      { property: "og:description", content: "Accept or reject ride requests as a RideGo driver." },
+      { property: "og:title", content: "Available Ride Requests — A&S GO Driver" },
+      { property: "og:description", content: "Accept or reject ride requests as a A&S GO driver." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
