@@ -280,6 +280,7 @@ export type Database = {
       app_role: "passenger" | "driver" | "admin"
       ride_status:
         | "waiting"
+        | "offered"
         | "accepted"
         | "arriving"
         | "arrived"
@@ -416,6 +417,7 @@ export const Constants = {
       app_role: ["passenger", "driver", "admin"],
       ride_status: [
         "waiting",
+        "offered",
         "accepted",
         "arriving",
         "arrived",
