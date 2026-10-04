@@ -1,14 +1,6 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
-
 # AGENTS.md
-- Ride data lives in localStorage via `src/lib/rides.ts` (`useRides` hook) — MVP prototype, no backend by request.
-- Shared header is rendered in `__root.tsx`; ride display reuses `RideCard`/`StatusBadge`.
+- Database is the source of truth; ride state changes go only through security-definer RPCs (make_offer, select_offer, advance_ride, cancel_ride, complete_ride_passenger, rate_ride) — keeps transitions and authorization server-side.
+- Realtime: components subscribe via `useLiveInvalidate` (src/lib/rides.ts) which invalidates React Query keys; driver GPS via src/lib/location.ts — one pattern for all live data.
+- Google Maps: browser key only renders maps (src/components/maps); Places/Geocoding/Routes go through authenticated server fns in src/lib/maps.functions.ts — keeps server key private.
+- Signed-in pages live under src/routes/_authenticated/; auth state from `useAuth` (src/lib/auth.tsx).
+- UI strings go through `useT()` (src/lib/i18n.tsx) with an Arabic dictionary; layout uses logical/RTL-safe classes.
