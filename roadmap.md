@@ -1,7 +1,8 @@
 # A&S GO roadmap
-- [x] Rebrand to A&S GO
-- [x] Database, secure ride actions, live updates, notifications (backend)
-- [x] Google Maps connected; map, place search, route and distance pieces built
-- [ ] Sign up/login pages + gated pages; switch Passenger/Driver pages to database (use rides-db, HeaderAuth, RideCardDb, AuthProvider in root)
-- [ ] Profile, history, ride details, ratings UI, earnings
+- [x] Rebrand, database, auth (passenger/driver), profile
+- [x] Maps: pickup/destination search, tap-to-pick, current location, route/distance/ETA
+- [x] Driver offers → passenger selects; statuses through trip completed; realtime both sides
+- [x] Live driver location; navigate to passenger; ratings after trip
+- [x] English/Arabic (RTL)
+- [ ] Ride history + ride details pages, driver earnings
 - [ ] Admin dashboard

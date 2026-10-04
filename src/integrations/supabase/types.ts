@@ -141,6 +141,41 @@ export type Database = {
           },
         ]
       }
+      ride_offers: {
+        Row: {
+          created_at: string
+          driver_id: string
+          id: string
+          price: number
+          ride_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          id?: string
+          price: number
+          ride_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          id?: string
+          price?: number
+          ride_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_offers_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_rejections: {
         Row: {
           created_at: string
@@ -270,16 +305,30 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ride_passenger: {
+        Args: { _ride: string; _user: string }
+        Returns: boolean
+      }
+      make_offer: {
+        Args: { _price: number; _ride: string }
+        Returns: undefined
+      }
+      offered_to: {
+        Args: { _driver: string; _passenger: string }
+        Returns: boolean
+      }
       rate_ride: {
         Args: { _comment: string; _ride: string; _stars: number }
         Returns: undefined
       }
+      select_offer: { Args: { _offer: string }; Returns: undefined }
       shares_ride: { Args: { _a: string; _b: string }; Returns: boolean }
     }
     Enums: {
       app_role: "passenger" | "driver" | "admin"
       ride_status:
         | "waiting"
+        | "offered"
         | "accepted"
         | "arriving"
         | "arrived"
@@ -416,6 +465,7 @@ export const Constants = {
       app_role: ["passenger", "driver", "admin"],
       ride_status: [
         "waiting",
+        "offered",
         "accepted",
         "arriving",
         "arrived",

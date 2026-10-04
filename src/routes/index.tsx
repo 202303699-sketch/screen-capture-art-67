@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { User, Car, ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,22 +24,23 @@ function ModeButton({ to, icon, title, text }: { to: "/passenger" | "/driver"; i
         <span className="block font-display text-2xl font-bold">{title}</span>
         <span className="text-sm text-muted-foreground">{text}</span>
       </span>
-      <ArrowRight className="h-6 w-6 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+      <ArrowRight className="h-6 w-6 text-muted-foreground transition-transform group-hover:translate-x-1 rtl:rotate-180 group-hover:text-primary" />
     </Link>
   );
 }
 
 function Index() {
+  const { t } = useT();
   return (
     <main className="mx-auto flex max-w-5xl flex-col items-center px-4 py-16 md:py-28">
-      <span className="mb-6 rounded-full border border-border px-4 py-1 text-xs font-medium text-muted-foreground">You name the price</span>
+      <span className="mb-6 rounded-full border border-border px-4 py-1 text-xs font-medium text-muted-foreground">{t("You name the price")}</span>
       <h1 className="text-center text-6xl font-bold tracking-tight md:text-8xl">
-        Ride<span className="text-primary">Go</span>
+        A&amp;S <span className="text-primary">GO</span>
       </h1>
-      <p className="mt-4 text-center text-lg text-muted-foreground md:text-xl">Simple and flexible ride booking</p>
+      <p className="mt-4 text-center text-lg text-muted-foreground md:text-xl">{t("Simple and flexible ride booking")}</p>
       <div className="mt-12 grid w-full max-w-3xl gap-4 md:grid-cols-2">
-        <ModeButton to="/passenger" icon={<User className="h-7 w-7" />} title="Passenger" text="Request a ride, set your price" />
-        <ModeButton to="/driver" icon={<Car className="h-7 w-7" />} title="Driver" text="Browse and accept requests" />
+        <ModeButton to="/passenger" icon={<User className="h-7 w-7" />} title={t("Passenger")} text={t("Request a ride, set your price")} />
+        <ModeButton to="/driver" icon={<Car className="h-7 w-7" />} title={t("Driver")} text={t("Browse and offer on requests")} />
       </div>
     </main>
   );

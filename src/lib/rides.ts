@@ -1,103 +1,123 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-export type RideStatus = "Waiting for Driver" | "Driver Accepted" | "Ride Completed" | "Cancelled";
+export type RideStatus = Database["public"]["Enums"]["ride_status"];
+export type Ride = Database["public"]["Tables"]["rides"]["Row"];
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type Offer = Database["public"]["Tables"]["ride_offers"]["Row"];
+export type DriverProfile = Database["public"]["Tables"]["driver_profiles"]["Row"];
 
-export interface Driver {
-  name: string;
-  rating: number;
-  car: string;
-  plate: string;
-}
+export const STATUS_LABEL: Record<RideStatus, string> = {
+  waiting: "Waiting for Driver",
+  offered: "Driver Offers",
+  accepted: "Driver Accepted",
+  arriving: "Driver Arriving",
+  arrived: "Driver Arrived",
+  started: "Trip Started",
+  completed: "Trip Completed",
+  cancelled: "Cancelled",
+};
 
-export interface Ride {
-  id: string;
-  pickup: string;
-  destination: string;
-  price: number;
-  createdAt: number;
-  status: RideStatus;
-  driver?: Driver;
-  mine?: boolean;
-}
+export const ACTIVE: RideStatus[] = ["waiting", "offered", "accepted", "arriving", "arrived", "started"];
 
-const KEY = "ridego.rides";
-const REJECTED_KEY = "ridego.rejected";
-const EVENT = "ridego:update";
+/** Label of the button a driver presses to move to the next status. */
+export const NEXT_ACTION: Partial<Record<RideStatus, string>> = {
+  accepted: "On my way",
+  arriving: "I've arrived",
+  arrived: "Start trip",
+  started: "Complete trip",
+};
 
-export const DEMO_DRIVER: Driver = { name: "Ahmed", rating: 4.8, car: "Hyundai Elantra", plate: "ABC 1234" };
-
-function seed(): Ride[] {
-  const now = Date.now();
-  return [
-    { id: "AS-1001", pickup: "Pharos University", destination: "San Stefano", price: 120, createdAt: now - 6 * 60000, status: "Waiting for Driver" },
-    { id: "AS-1002", pickup: "Alexandria Library", destination: "Smouha", price: 100, createdAt: now - 12 * 60000, status: "Waiting for Driver" },
-    { id: "AS-1003", pickup: "Miami", destination: "Sporting", price: 80, createdAt: now - 20 * 60000, status: "Waiting for Driver" },
-  ];
-}
-
-function read<T>(key: string, fallback: () => T): T {
-  const raw = localStorage.getItem(key);
-  if (!raw) {
-    const v = fallback();
-    localStorage.setItem(key, JSON.stringify(v));
-    return v;
-  }
-  try { return JSON.parse(raw) as T; } catch { return fallback(); }
-}
-
-function write(key: string, value: unknown) {
-  localStorage.setItem(key, JSON.stringify(value));
-  window.dispatchEvent(new Event(EVENT));
-}
-
-export function useRides() {
-  const [rides, setRides] = useState<Ride[]>([]);
-  const [rejected, setRejected] = useState<string[]>([]);
-
-  useEffect(() => {
-    const sync = () => {
-      setRides(read(KEY, seed));
-      setRejected(read<string[]>(REJECTED_KEY, () => []));
-    };
-    sync();
-    window.addEventListener(EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const update = useCallback((id: string, patch: Partial<Ride>) => {
-    write(KEY, read(KEY, seed).map((r) => (r.id === id ? { ...r, ...patch } : r)));
-  }, []);
-
-  const createRide = useCallback((pickup: string, destination: string, price: number) => {
-    const ride: Ride = {
-      id: "AS-" + Math.random().toString(36).slice(2, 7).toUpperCase(),
-      pickup, destination, price, createdAt: Date.now(), status: "Waiting for Driver", mine: true,
-    };
-    write(KEY, [ride, ...read(KEY, seed)]);
-    return ride;
-  }, []);
-
-  const accept = useCallback((id: string) => update(id, { status: "Driver Accepted", driver: DEMO_DRIVER }), [update]);
-  const complete = useCallback((id: string) => update(id, { status: "Ride Completed" }), [update]);
-  const cancel = useCallback((id: string) => update(id, { status: "Cancelled" }), [update]);
-  const reject = useCallback((id: string) => {
-    write(REJECTED_KEY, [...read<string[]>(REJECTED_KEY, () => []), id]);
-  }, []);
-  const reset = useCallback(() => {
-    write(KEY, seed());
-    write(REJECTED_KEY, []);
-  }, []);
-
-  return { rides, rejected, createRide, accept, reject, complete, cancel, reset };
-}
-
-export function timeAgo(ts: number) {
-  const m = Math.round((Date.now() - ts) / 60000);
+export function timeAgo(ts: string) {
+  const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
   if (m < 1) return "just now";
   if (m < 60) return `${m} min ago`;
-  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (m < 1440) return `${Math.round(m / 60)} h ago`;
+  return new Date(ts).toLocaleDateString();
 }
+
+export function formatDate(ts: string) {
+  return new Date(ts).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
+function errMsg(e: unknown) {
+  return e instanceof Error ? e.message : (e as { message?: string })?.message ?? "Something went wrong";
+}
+
+async function rpc<T>(p: PromiseLike<{ data: T; error: unknown }>) {
+  const { data, error } = await p;
+  if (error) throw new Error(errMsg(error));
+  return data;
+}
+
+export const rideActions = {
+  offer: (id: string, price: number) => rpc(supabase.rpc("make_offer", { _ride: id, _price: price })),
+  selectOffer: (offerId: string) => rpc(supabase.rpc("select_offer", { _offer: offerId })),
+  advance: (id: string) => rpc(supabase.rpc("advance_ride", { _ride: id })),
+  cancel: (id: string) => rpc(supabase.rpc("cancel_ride", { _ride: id })),
+  completeByPassenger: (id: string) => rpc(supabase.rpc("complete_ride_passenger", { _ride: id })),
+  rate: (id: string, stars: number, comment: string) =>
+    rpc(supabase.rpc("rate_ride", { _ride: id, _stars: stars, _comment: comment })),
+  reject: async (rideId: string, driverId: string) => {
+    const { error } = await supabase.from("ride_rejections").insert({ ride_id: rideId, driver_id: driverId });
+    if (error) throw new Error(error.message);
+  },
+};
+
+/** Subscribe to realtime changes on a table and invalidate the given query keys. */
+export function useLiveInvalidate(table: "rides" | "notifications" | "driver_profiles" | "ride_offers", keys: unknown[][], filter?: string) {
+  const qc = useQueryClient();
+  const keyStr = JSON.stringify(keys);
+  useEffect(() => {
+    const channel = supabase
+      .channel(`live-${table}-${filter ?? "all"}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, () => {
+        for (const k of JSON.parse(keyStr) as unknown[][]) qc.invalidateQueries({ queryKey: k });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [table, filter, keyStr, qc]);
+}
+
+export interface Person {
+  profile: Profile | null;
+  driver: DriverProfile | null;
+  rating: { avg: number; count: number };
+}
+
+/** Load profile, driver profile and average rating for a user. */
+export async function fetchPerson(userId: string): Promise<Person> {
+  const [p, d, r] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+    supabase.from("driver_profiles").select("*").eq("user_id", userId).maybeSingle(),
+    supabase.from("ratings").select("stars").eq("ratee_id", userId),
+  ]);
+  const stars = r.data ?? [];
+  const avg = stars.length ? stars.reduce((a, s) => a + s.stars, 0) / stars.length : 0;
+  return { profile: p.data, driver: d.data, rating: { avg, count: stars.length } };
+}
+
+export function usePerson(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["person", userId],
+    queryFn: () => fetchPerson(userId!),
+    enabled: !!userId,
+  });
+}
+
+export function useMyRating(rideId: string, userId: string | undefined) {
+  return useQuery({
+    queryKey: ["my-rating", rideId, userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from("ratings").select("*").eq("ride_id", rideId).eq("rater_id", userId!).maybeSingle();
+      return data;
+    },
+  });
+}
+
+export { errMsg };

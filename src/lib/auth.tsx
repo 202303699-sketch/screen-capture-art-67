@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
-    router.navigate({ to: "/", replace: true });
+    router.navigate({ to: "/auth", replace: true });
   };
 
   return (

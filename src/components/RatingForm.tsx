@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { rideActions, useMyRating, errMsg } from "@/lib/rides-db";
+import { rideActions, useMyRating, errMsg } from "@/lib/rides";
 import { useAuth } from "@/lib/auth";
 
 export function RatingForm({ rideId, who }: { rideId: string; who: string }) {

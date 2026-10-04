@@ -1,5 +1,5 @@
 import { Star, Car, Phone } from "lucide-react";
-import { usePerson } from "@/lib/rides-db";
+import { usePerson } from "@/lib/rides";
 
 export function Stars({ value, count }: { value: number; count?: number }) {
   return (
