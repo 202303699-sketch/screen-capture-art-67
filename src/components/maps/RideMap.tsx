@@ -7,10 +7,10 @@ export interface LatLng {
 }
 
 interface Props {
-  pickup?: LatLng | null;
-  destination?: LatLng | null;
-  driver?: LatLng | null;
-  polyline?: string | null;
+  pickup?: LatLng | null | undefined;
+  destination?: LatLng | null | undefined;
+  driver?: LatLng | null | undefined;
+  polyline?: string | null | undefined;
   onPick?: (p: LatLng) => void;
   className?: string;
 }

@@ -135,7 +135,7 @@ function OpenRequests() {
   );
 }
 
-function RequestCard({ ride, myOffer }: { ride: Ride; myOffer?: Offer }) {
+function RequestCard({ ride, myOffer }: { ride: Ride; myOffer?: Offer | undefined }) {
   const { user } = useAuth();
   const { t } = useT();
   const qc = useQueryClient();
