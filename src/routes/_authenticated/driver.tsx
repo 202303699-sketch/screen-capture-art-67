@@ -12,6 +12,7 @@ import { RideMap } from "@/components/maps/RideMap";
 import { RideCard } from "@/components/RideCard";
 import { PersonCard } from "@/components/PersonCard";
 import { RatingForm } from "@/components/RatingForm";
+import { RideChat } from "@/components/RideChat";
 import { StateBox } from "@/components/StateBox";
 
 export const Route = createFileRoute("/_authenticated/driver")({
@@ -49,7 +50,7 @@ function DriverPage() {
     queryKey: mineKey,
     enabled: !!user && isDriver,
     queryFn: async () => {
-      const { data, error } = await supabase.from("rides").select("*").eq("driver_id", user!.id).order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("rides").select("*").eq("driver_id", user!.id).order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       return data;
     },
@@ -69,7 +70,7 @@ function DriverPage() {
     qc.invalidateQueries({ queryKey: meKey });
   };
 
-  const past = (mine.data ?? []).filter((r) => r !== active);
+  const past = (mine.data ?? []).filter((r) => r !== active).slice(0, 12);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -85,13 +86,14 @@ function DriverPage() {
           {denied ? t("Location permission denied — passengers can't see you.") : t("Sharing your live location")}
         </p>
       )}
+      <Earnings rides={mine.data ?? []} />
       {active ? <ActiveRide ride={active} myPos={pos} /> : online ? <OpenRequests /> : <StateBox>{t("Go online to see requests.")}</StateBox>}
       {past.length > 0 && (
         <>
           <h2 className="mb-4 mt-10 text-2xl font-bold">{t("Previous rides")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {past.map((r) => (
-              <RideCard key={r.id} ride={r}>{r.status === "completed" && <RatingForm rideId={r.id} who="passenger" />}</RideCard>
+              <RideCard key={r.id} ride={r} link>{r.status === "completed" && <RatingForm rideId={r.id} who="passenger" />}</RideCard>
             ))}
           </div>
         </>
@@ -160,7 +162,12 @@ function RequestCard({ ride, myOffer }: { ride: Ride; myOffer?: Offer | undefine
   return (
     <RideCard ride={ride}>
       {pickup && <RideMap pickup={pickup} destination={dest} className="mt-4 h-40" />}
-      {myOffer?.status === "pending" && <p className="mt-3 rounded-xl bg-secondary px-3 py-2 text-xs text-primary">{t("Offer sent — waiting for passenger")} · {Number(myOffer.price)} EGP</p>}
+      {myOffer?.status === "pending" && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-secondary px-3 py-2 text-xs text-primary">
+          <span>{t("Offer sent — waiting for passenger")} · {Number(myOffer.price)} EGP</span>
+          <button disabled={busy} onClick={() => run(() => rideActions.withdraw(ride.id))} className="font-semibold text-destructive">{t("Withdraw")}</button>
+        </div>
+      )}
       <div className="mt-4 flex gap-2">
         <button disabled={busy} onClick={() => run(() => rideActions.offer(ride.id, Number(ride.price)))} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">{t("Accept")}</button>
         <button disabled={busy} onClick={() => run(() => rideActions.reject(ride.id, user!.id))} className="flex items-center justify-center gap-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-destructive/10 hover:text-destructive"><X className="h-4 w-4" />{t("Reject")}</button>
@@ -199,6 +206,7 @@ function ActiveRide({ ride, myPos }: { ride: Ride; myPos: { lat: number; lng: nu
       <RideMap pickup={pickup} destination={dest} driver={myPos} className="h-72 md:h-[28rem]" />
       <RideCard ride={ride}>
         <PersonCard userId={ride.passenger_id} title={t("Your passenger")} />
+        <RideChat rideId={ride.id} canSend />
         <div className="mt-4 grid gap-2">
           {navTo && (
             <a href={navigateUrl(navTo)} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl border border-primary py-2.5 text-sm font-semibold text-primary"><Navigation className="h-4 w-4" />{t("Navigate")}</a>
@@ -209,6 +217,31 @@ function ActiveRide({ ride, myPos }: { ride: Ride; myPos: { lat: number; lng: nu
           )}
         </div>
       </RideCard>
+    </div>
+  );
+}
+
+function Earnings({ rides }: { rides: Ride[] }) {
+  const { t } = useT();
+  const done = rides.filter((r) => r.status === "completed");
+  const now = new Date();
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekStart = dayStart - 6 * 86400000;
+  const sum = (from: number) => done.filter((r) => new Date(r.completed_at ?? r.created_at).getTime() >= from).reduce((a, r) => a + Number(r.price), 0);
+  const cards = [
+    { label: "Today", value: `${sum(dayStart)} EGP` },
+    { label: "Last 7 days", value: `${sum(weekStart)} EGP` },
+    { label: "Total earnings", value: `${sum(0)} EGP` },
+    { label: "Completed rides", value: String(done.length) },
+  ];
+  return (
+    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+      {cards.map((c) => (
+        <div key={c.label} className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">{t(c.label)}</p>
+          <p className="mt-1 font-display text-xl font-bold text-primary">{c.value}</p>
+        </div>
+      ))}
     </div>
   );
 }
