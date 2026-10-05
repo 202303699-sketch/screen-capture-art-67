@@ -44,6 +44,38 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          ride_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          ride_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          ride_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -141,6 +173,44 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reported_user_id: string | null
+          reporter_id: string
+          ride_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reported_user_id?: string | null
+          reporter_id: string
+          ride_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_user_id?: string | null
+          reporter_id?: string
+          ride_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_offers: {
         Row: {
           created_at: string
@@ -216,11 +286,15 @@ export type Database = {
           driver_id: string | null
           duration_min: number | null
           id: string
+          package_description: string | null
           passenger_id: string
           pickup: string
           pickup_lat: number | null
           pickup_lng: number | null
           price: number
+          recipient_name: string | null
+          recipient_phone: string | null
+          service_type: string
           started_at: string | null
           status: Database["public"]["Enums"]["ride_status"]
         }
@@ -237,11 +311,15 @@ export type Database = {
           driver_id?: string | null
           duration_min?: number | null
           id?: string
+          package_description?: string | null
           passenger_id: string
           pickup: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           price: number
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          service_type?: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["ride_status"]
         }
@@ -258,11 +336,15 @@ export type Database = {
           driver_id?: string | null
           duration_min?: number | null
           id?: string
+          package_description?: string | null
           passenger_id?: string
           pickup?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           price?: number
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          service_type?: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["ride_status"]
         }
@@ -305,6 +387,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ride_party: {
+        Args: { _ride: string; _user: string }
+        Returns: boolean
+      }
       is_ride_passenger: {
         Args: { _ride: string; _user: string }
         Returns: boolean
@@ -313,6 +399,7 @@ export type Database = {
         Args: { _price: number; _ride: string }
         Returns: undefined
       }
+      mark_no_driver: { Args: { _ride: string }; Returns: undefined }
       offered_to: {
         Args: { _driver: string; _passenger: string }
         Returns: boolean
@@ -321,8 +408,10 @@ export type Database = {
         Args: { _comment: string; _ride: string; _stars: number }
         Returns: undefined
       }
+      ride_chat_open: { Args: { _ride: string }; Returns: boolean }
       select_offer: { Args: { _offer: string }; Returns: undefined }
       shares_ride: { Args: { _a: string; _b: string }; Returns: boolean }
+      withdraw_offer: { Args: { _ride: string }; Returns: undefined }
     }
     Enums: {
       app_role: "passenger" | "driver" | "admin"
