@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDriverRouteImport } from './routes/_authenticated/driver'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedPassengerRouteImport } from './routes/_authenticated/passenger'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedRidesIdRouteImport } from './routes/_authenticated/rides.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -30,9 +33,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDriverRoute = AuthenticatedDriverRouteImport.update({
   id: '/driver',
   path: '/driver',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPassengerRoute = AuthenticatedPassengerRouteImport.update({
@@ -45,43 +58,76 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRidesIdRoute = AuthenticatedRidesIdRouteImport.update({
+  id: '/rides/$id',
+  path: '/rides/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/driver': typeof AuthenticatedDriverRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/passenger': typeof AuthenticatedPassengerRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rides/$id': typeof AuthenticatedRidesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/driver': typeof AuthenticatedDriverRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/passenger': typeof AuthenticatedPassengerRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rides/$id': typeof AuthenticatedRidesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/driver': typeof AuthenticatedDriverRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/passenger': typeof AuthenticatedPassengerRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/rides/$id': typeof AuthenticatedRidesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/driver' | '/passenger' | '/profile'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/driver'
+    | '/history'
+    | '/passenger'
+    | '/profile'
+    | '/rides/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/driver' | '/passenger' | '/profile'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/driver'
+    | '/history'
+    | '/passenger'
+    | '/profile'
+    | '/rides/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin'
     | '/_authenticated/driver'
+    | '/_authenticated/history'
     | '/_authenticated/passenger'
     | '/_authenticated/profile'
+    | '/_authenticated/rides/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,11 +159,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/driver': {
       id: '/_authenticated/driver'
       path: '/driver'
       fullPath: '/driver'
       preLoaderRoute: typeof AuthenticatedDriverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/passenger': {
@@ -134,19 +194,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rides/$id': {
+      id: '/_authenticated/rides/$id'
+      path: '/rides/$id'
+      fullPath: '/rides/$id'
+      preLoaderRoute: typeof AuthenticatedRidesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDriverRoute: typeof AuthenticatedDriverRoute
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedPassengerRoute: typeof AuthenticatedPassengerRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRidesIdRoute: typeof AuthenticatedRidesIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDriverRoute: AuthenticatedDriverRoute,
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedPassengerRoute: AuthenticatedPassengerRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRidesIdRoute: AuthenticatedRidesIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

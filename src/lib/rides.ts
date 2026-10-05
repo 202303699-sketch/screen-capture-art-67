@@ -7,6 +7,7 @@ export type RideStatus = Database["public"]["Enums"]["ride_status"];
 export type Ride = Database["public"]["Tables"]["rides"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Offer = Database["public"]["Tables"]["ride_offers"]["Row"];
+export type Message = Database["public"]["Tables"]["messages"]["Row"];
 export type DriverProfile = Database["public"]["Tables"]["driver_profiles"]["Row"];
 
 export const STATUS_LABEL: Record<RideStatus, string> = {
@@ -18,6 +19,7 @@ export const STATUS_LABEL: Record<RideStatus, string> = {
   started: "Trip Started",
   completed: "Trip Completed",
   cancelled: "Cancelled",
+  no_driver: "No Driver Found",
 };
 
 export const ACTIVE: RideStatus[] = ["waiting", "offered", "accepted", "arriving", "arrived", "started"];
@@ -55,6 +57,8 @@ async function rpc<T>(p: PromiseLike<{ data: T; error: unknown }>) {
 export const rideActions = {
   offer: (id: string, price: number) => rpc(supabase.rpc("make_offer", { _ride: id, _price: price })),
   selectOffer: (offerId: string) => rpc(supabase.rpc("select_offer", { _offer: offerId })),
+  withdraw: (rideId: string) => rpc(supabase.rpc("withdraw_offer", { _ride: rideId })),
+  markNoDriver: (rideId: string) => rpc(supabase.rpc("mark_no_driver", { _ride: rideId })),
   advance: (id: string) => rpc(supabase.rpc("advance_ride", { _ride: id })),
   cancel: (id: string) => rpc(supabase.rpc("cancel_ride", { _ride: id })),
   completeByPassenger: (id: string) => rpc(supabase.rpc("complete_ride_passenger", { _ride: id })),
@@ -67,17 +71,23 @@ export const rideActions = {
 };
 
 /** Subscribe to realtime changes on a table and invalidate the given query keys. */
-export function useLiveInvalidate(table: "rides" | "notifications" | "driver_profiles" | "ride_offers", keys: unknown[][], filter?: string) {
+export function useLiveInvalidate(table: "rides" | "notifications" | "driver_profiles" | "ride_offers" | "messages", keys: unknown[][], filter?: string) {
   const qc = useQueryClient();
   const keyStr = JSON.stringify(keys);
   useEffect(() => {
+    const refresh = () => {
+      for (const k of JSON.parse(keyStr) as unknown[][]) qc.invalidateQueries({ queryKey: k });
+    };
     const channel = supabase
       .channel(`live-${table}-${filter ?? "all"}-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, () => {
-        for (const k of JSON.parse(keyStr) as unknown[][]) qc.invalidateQueries({ queryKey: k });
-      })
-      .subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, refresh)
+      .subscribe((status) => {
+        // After a (re)connect or a dropped channel, refetch so nothing is missed.
+        if (status === "SUBSCRIBED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") refresh();
+      });
+    window.addEventListener("online", refresh);
     return () => {
+      window.removeEventListener("online", refresh);
       supabase.removeChannel(channel);
     };
   }, [table, filter, keyStr, qc]);

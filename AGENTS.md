@@ -4,3 +4,5 @@
 - Google Maps: browser key only renders maps (src/components/maps); Places/Geocoding/Routes go through authenticated server fns in src/lib/maps.functions.ts — keeps server key private.
 - Signed-in pages live under src/routes/_authenticated/; auth state from `useAuth` (src/lib/auth.tsx).
 - UI strings go through `useT()` (src/lib/i18n.tsx) with an Arabic dictionary; layout uses logical/RTL-safe classes.
+- Chat (messages), reports, offer withdrawal/expiry (10 min) and "no driver found" are enforced in the database (RLS + RPCs withdraw_offer, mark_no_driver, select_offer) — UI only mirrors those rules.
+- Admin dashboard (/admin) reads the database directly as the signed-in admin; admin access comes only from the user_roles table.

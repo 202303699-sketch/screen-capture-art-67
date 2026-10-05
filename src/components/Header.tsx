@@ -28,7 +28,7 @@ export function Logo() {
 }
 
 export function Header() {
-  const { user, isDriver, isPassenger, signOut } = useAuth();
+  const { user, isDriver, isPassenger, isAdmin, signOut } = useAuth();
   const { t } = useT();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
@@ -39,6 +39,8 @@ export function Header() {
             <nav className="flex gap-1 rounded-full bg-card p-1">
               {isPassenger && <Link to="/passenger" className={linkCls} activeProps={{ className: activeCls }}>{t("Ride")}</Link>}
               {isDriver && <Link to="/driver" className={linkCls} activeProps={{ className: activeCls }}>{t("Drive")}</Link>}
+              <Link to="/history" className={linkCls} activeProps={{ className: activeCls }}>{t("History")}</Link>
+              {isAdmin && <Link to="/admin" className={linkCls} activeProps={{ className: activeCls }}>{t("Admin")}</Link>}
             </nav>
             <LangToggle />
             <NotificationBell userId={user.id} />

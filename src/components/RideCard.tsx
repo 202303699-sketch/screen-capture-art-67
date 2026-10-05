@@ -1,5 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { MapPin, Flag, Clock, Route as RouteIcon, Timer } from "lucide-react";
+import { Package, MapPin, Flag, Clock, Route as RouteIcon, Timer } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { type Ride, type RideStatus, STATUS_LABEL, timeAgo } from "@/lib/rides";
 
@@ -12,6 +13,7 @@ const statusCls: Record<RideStatus, string> = {
   started: "bg-primary/15 text-primary",
   completed: "bg-secondary text-muted-foreground",
   cancelled: "bg-destructive/15 text-destructive",
+  no_driver: "bg-destructive/15 text-destructive",
 };
 
 export function StatusBadge({ status }: { status: RideStatus }) {
@@ -28,8 +30,15 @@ export function RideCard({ ride, children, link = false }: { ride: Ride; childre
   const { t } = useT();
   return (
     <article className="rounded-2xl border border-border bg-card p-5">
+      {ride.service_type === "delivery" && (
+        <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-info/15 px-3 py-1 text-xs font-semibold text-info"><Package className="h-3.5 w-3.5" />{t("Delivery")}</p>
+      )}
       <div className="mb-4 flex items-center justify-between gap-2">
-        <span className="font-mono text-xs text-muted-foreground">{ride.code}{link ? "" : ""}</span>
+        {link ? (
+          <Link to="/rides/$id" params={{ id: ride.id }} className="font-mono text-xs text-muted-foreground hover:text-primary">{ride.code} →</Link>
+        ) : (
+          <span className="font-mono text-xs text-muted-foreground">{ride.code}</span>
+        )}
         <StatusBadge status={ride.status} />
       </div>
       <div className="space-y-3">
@@ -54,6 +63,12 @@ export function RideCard({ ride, children, link = false }: { ride: Ride; childre
           <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{timeAgo(ride.created_at)}</span>
         </div>
       </div>
+      {ride.service_type === "delivery" && (ride.package_description || ride.recipient_name) && (
+        <div className="mt-3 rounded-xl bg-secondary px-3 py-2 text-xs">
+          {ride.package_description && <p><span className="text-muted-foreground">{t("Package")}: </span>{ride.package_description}</p>}
+          {ride.recipient_name && <p><span className="text-muted-foreground">{t("Recipient")}: </span>{ride.recipient_name}{ride.recipient_phone ? ` · ${ride.recipient_phone}` : ""}</p>}
+        </div>
+      )}
       {children}
     </article>
   );
